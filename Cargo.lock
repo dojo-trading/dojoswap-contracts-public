@@ -265,6 +265,87 @@ dependencies = [
 ]
 
 [[package]]
+name = "dojoswap"
+version = "2.9.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cosmwasm-storage",
+ "cw2",
+ "cw20",
+ "protobuf",
+ "schemars",
+ "serde",
+]
+
+[[package]]
+name = "dojoswap-factory"
+version = "0.2.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cosmwasm-storage",
+ "cw-storage-plus",
+ "cw2",
+ "cw20",
+ "dojoswap",
+ "protobuf",
+ "schemars",
+ "serde",
+]
+
+[[package]]
+name = "dojoswap-pair"
+version = "0.2.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cosmwasm-storage",
+ "cw-storage-plus",
+ "cw2",
+ "cw20",
+ "dojoswap",
+ "protobuf",
+ "schemars",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "dojoswap-router"
+version = "0.2.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cosmwasm-storage",
+ "cw-storage-plus",
+ "cw2",
+ "cw20",
+ "dojoswap",
+ "integer-sqrt",
+ "schemars",
+ "serde",
+]
+
+[[package]]
+name = "dojoswap-token"
+version = "0.0.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cosmwasm-storage",
+ "cw-storage-plus",
+ "cw0",
+ "cw2",
+ "cw20",
+ "cw20-base",
+ "dojoswap",
+ "schemars",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "dyn-clone"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -654,87 +735,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-xid",
-]
-
-[[package]]
-name = "terraswap"
-version = "2.9.0"
-dependencies = [
- "cosmwasm-schema",
- "cosmwasm-std",
- "cosmwasm-storage",
- "cw2",
- "cw20",
- "protobuf",
- "schemars",
- "serde",
-]
-
-[[package]]
-name = "terraswap-factory"
-version = "0.2.0"
-dependencies = [
- "cosmwasm-schema",
- "cosmwasm-std",
- "cosmwasm-storage",
- "cw-storage-plus",
- "cw2",
- "cw20",
- "protobuf",
- "schemars",
- "serde",
- "terraswap",
-]
-
-[[package]]
-name = "terraswap-pair"
-version = "0.2.0"
-dependencies = [
- "cosmwasm-schema",
- "cosmwasm-std",
- "cosmwasm-storage",
- "cw-storage-plus",
- "cw2",
- "cw20",
- "protobuf",
- "schemars",
- "serde",
- "terraswap",
- "thiserror",
-]
-
-[[package]]
-name = "terraswap-router"
-version = "0.2.0"
-dependencies = [
- "cosmwasm-schema",
- "cosmwasm-std",
- "cosmwasm-storage",
- "cw-storage-plus",
- "cw2",
- "cw20",
- "integer-sqrt",
- "schemars",
- "serde",
- "terraswap",
-]
-
-[[package]]
-name = "terraswap-token"
-version = "0.0.0"
-dependencies = [
- "cosmwasm-schema",
- "cosmwasm-std",
- "cosmwasm-storage",
- "cw-storage-plus",
- "cw0",
- "cw2",
- "cw20",
- "cw20-base",
- "schemars",
- "serde",
- "terraswap",
- "thiserror",
 ]
 
 [[package]]

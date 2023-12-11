@@ -1,7 +1,7 @@
-# TerraSwap
-[![terraswap on crates.io](https://img.shields.io/crates/v/terraswap.svg)](https://crates.io/crates/terraswap)
-[![workflow](https://github.com/terraswap/terraswap/actions/workflows/tests.yml/badge.svg)](https://github.com/terraswap/terraswap/actions/workflows/tests.yml)
-[![codecov](https://codecov.io/gh/terraswap/terraswap/branch/main/graph/badge.svg?token=ERMFLEY6Y7)](https://codecov.io/gh/terraswap/terraswap)
+# DojoSwap
+[![dojoswap on crates.io](https://img.shields.io/crates/v/dojoswap.svg)](https://crates.io/crates/dojoswap)
+[![workflow](https://github.com/dojoswap/dojoswap/actions/workflows/tests.yml/badge.svg)](https://github.com/dojoswap/dojoswap/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/dojoswap/dojoswap/branch/main/graph/badge.svg?token=ERMFLEY6Y7)](https://codecov.io/gh/dojoswap/dojoswap)
 
 Uniswap-inspired automated market-maker (AMM) protocol powered by Smart Contracts on the [Terra](https://terra.money) blockchain.
 
@@ -9,30 +9,30 @@ Uniswap-inspired automated market-maker (AMM) protocol powered by Smart Contract
 
 | Name                                               | Description                                  |
 | -------------------------------------------------- | -------------------------------------------- |
-| [`terraswap_factory`](contracts/terraswap_factory) |                                              |
-| [`terraswap_pair`](contracts/terraswap_pair)       |                                              |
-| [`terraswap_router`](contracts/terraswap_router)   |                                              |
-| [`terraswap_token`](contracts/terraswap_token)     | CW20 (ERC20 equivalent) token implementation |
+| [`dojoswap_factory`](contracts/dojoswap_factory) |                                              |
+| [`dojoswap_pair`](contracts/dojoswap_pair)       |                                              |
+| [`dojoswap_router`](contracts/dojoswap_router)   |                                              |
+| [`dojoswap_token`](contracts/dojoswap_token)     | CW20 (ERC20 equivalent) token implementation |
 
-* terraswap_factory
+* dojoswap_factory
 
    Mainnet: `terra1466nf3zuxpya8q9emxukd7vftaf6h4psr0a07srl5zw74zh84yjqxl5qul`
 
    Testnet: `terra1jha5avc92uerwp9qzx3flvwnyxs3zax2rrm6jkcedy2qvzwd2k7qk7yxcl`
 
-* terraswap_pair
+* dojoswap_pair
 
    Mainnet (CodeID): 5
 
    Testnet (CodeID): 84
 
-* terraswap_token
+* dojoswap_token
 
    Mainnet (CodeID): 4
 
    Testnet (CodeID): 83
 
-* terraswap_router
+* dojoswap_router
 
    Mainnet: `terra13ehuhysn5mqjeaheeuew2gjs785f6k7jm8vfsqg3jhtpkwppcmzqcu7chk`
 
