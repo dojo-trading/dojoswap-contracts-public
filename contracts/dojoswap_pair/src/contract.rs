@@ -37,6 +37,7 @@ const INSTANTIATE_REPLY_ID: u64 = 1;
 const COMMISSION_RATE: u64 = 3;
 
 const MINIMUM_LIQUIDITY_AMOUNT: u128 = 1_000;
+const FEE_COLLECTOR: &str = "inj18xg2xfhv36v4z7dr3ldqnm43fzukqgsafyyg63";
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -536,6 +537,14 @@ pub fn swap(
     let mut messages: Vec<CosmosMsg> = vec![];
     if !return_amount.is_zero() {
         messages.push(return_asset.into_msg(receiver.clone())?);
+    }
+    
+    if !commission_amount.is_zero() {
+        let commission_asset = Asset {
+            info: ask_pool.info.clone(),
+            amount: commission_amount,
+        };
+        messages.push(commission_asset.into_msg(Addr::unchecked(FEE_COLLECTOR))?);
     }
 
     // 1. send collateral token from the contract to a user
