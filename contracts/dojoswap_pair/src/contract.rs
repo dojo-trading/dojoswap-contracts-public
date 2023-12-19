@@ -539,10 +539,11 @@ pub fn swap(
         messages.push(return_asset.into_msg(receiver.clone())?);
     }
     
+    // Sends half of commissions as fees to fee collector
     if !commission_amount.is_zero() {
         let commission_asset = Asset {
             info: ask_pool.info.clone(),
-            amount: commission_amount,
+            amount: commission_amount.checked_div(Uint128::from(2u128)).ok().unwrap(),
         };
         messages.push(commission_asset.into_msg(Addr::unchecked(FEE_COLLECTOR))?);
     }
