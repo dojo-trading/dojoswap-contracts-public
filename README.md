@@ -3,7 +3,7 @@
 [![workflow](https://github.com/dojoswap/dojoswap/actions/workflows/tests.yml/badge.svg)](https://github.com/dojoswap/dojoswap/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/dojoswap/dojoswap/branch/main/graph/badge.svg?token=ERMFLEY6Y7)](https://codecov.io/gh/dojoswap/dojoswap)
 
-Uniswap-inspired automated market-maker (AMM) protocol powered by Smart Contracts on the [Terra](https://terra.money) blockchain.
+Uniswap-inspired automated market-maker (AMM) protocol powered by Smart Contracts on the [Injective](https://injective.com) blockchain.
 
 ## Contracts
 
@@ -16,27 +16,27 @@ Uniswap-inspired automated market-maker (AMM) protocol powered by Smart Contract
 
 * dojoswap_factory
 
-   Mainnet: `terra1466nf3zuxpya8q9emxukd7vftaf6h4psr0a07srl5zw74zh84yjqxl5qul`
+   Mainnet: `inj1zfkh35ff8gmvczve27yr24u26cq0zmh723gh9v`
 
-   Testnet: `terra1jha5avc92uerwp9qzx3flvwnyxs3zax2rrm6jkcedy2qvzwd2k7qk7yxcl`
+   Testnet: `inj13x5m8l5whmhvv2le44aq0j6ukr8h5xh8atxpra`
 
 * dojoswap_pair
 
-   Mainnet (CodeID): 5
+   <!-- Mainnet (CodeID): 5 -->
 
-   Testnet (CodeID): 84
+   Testnet (CodeID): 4697
 
 * dojoswap_token
 
-   Mainnet (CodeID): 4
+   <!-- Mainnet (CodeID): 4 -->
 
-   Testnet (CodeID): 83
+   Testnet (CodeID): 4441
 
 * dojoswap_router
 
-   Mainnet: `terra13ehuhysn5mqjeaheeuew2gjs785f6k7jm8vfsqg3jhtpkwppcmzqcu7chk`
+   Mainnet: `inj1yt3t5cuux2t3huxctwtfg0lmzvhkqm6uzrrmdv`
 
-   Testnet: `terra1xp6xe6uwqrspumrkazdg90876ns4h78yw03vfxghhcy03yexcrcsdaqvc8`
+   Testnet: `inj1hz3qjp6sh36ch0kv6v6uj7z0ngucxj5mgetyqk`
 
 ## Running this contract
 
