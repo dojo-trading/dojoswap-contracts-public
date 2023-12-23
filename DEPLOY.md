@@ -60,6 +60,11 @@ Router
 {"dojoswap_factory":"inj13x5m8l5whmhvv2le44aq0j6ukr8h5xh8atxpra"}
 ```
 
+Staking
+```
+{"dojo_token":"inj16l3txcsmjcs6nrc3s0se0388r39j8wn73n45cy", "staking_token": "inj1knxx8crp0auxyvx8hn3jjl7htfsandx5xf0n8q", "distribution_schedule": [1703351907, 1705943907, 1000000000000000000000]}
+```
+
 ### Core Init
 ```
 export INJ_ADDRESS=inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt
@@ -96,11 +101,22 @@ injectived tx wasm instantiate $CODE_ID $INIT --label="Dojoswap Deployment" --fr
 ```
 
 ### Staking Init
-```
+```sh
 export INJ_ADDRESS=inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt
 export CODE_ID=4627
-export INIT='{"owner":"inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt", "reward_token_address": "inj16l3txcsmjcs6nrc3s0se0388r39j8wn73n45cy", "stake_token_address": "inj1g6exhjfmss0qpylzds9zh2tehzl2ckn7zffecd", "daily_reward_amount": "100000000000000000000", "reward_interval": 86400, "lock_days": 1, "enabled": true}'
+export INIT='{"owner":"inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt", "reward_token_address": "inj16l3txcsmjcs6nrc3s0se0388r39j8wn73n45cy", "stake_token_address": "inj1knxx8crp0auxyvx8hn3jjl7htfsandx5xf0n8q", "daily_reward_amount": "100000000000000000000", "reward_interval": 86400, "lock_days": 1, "enabled": true}'
 injectived tx wasm instantiate $CODE_ID $INIT --label="Dojoswap Deployment" --from=$(echo $INJ_ADDRESS) --chain-id="injective-888" --yes --gas-prices=500000000inj --gas=20000000 --admin=$(echo $INJ_ADDRESS) --node=https://testnet.sentry.tm.injective.network:443
+
+
+# sends reward tokens to contract
+export CONTRACT=inj16l3txcsmjcs6nrc3s0se0388r39j8wn73n45cy
+export CONFIG='{"send":{"contract": "inj18j3tn5hrf3uex5lw2egp5epl6xuwnmu2rt2k0z", "amount": "10000000000000000000000", "msg": ""}}'
+injectived tx wasm execute $CONTRACT "$CONFIG" --from=$(echo $INJ_ADDRESS) \
+--chain-id="injective-888" \
+--yes --fees=1000000000000000inj --gas=2000000 \
+--node="https://testnet.sentry.tm.injective.network:443" \
+--output json
+
 ```
 
 ### Create New Pair
