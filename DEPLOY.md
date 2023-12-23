@@ -33,6 +33,12 @@ injectived tx wasm store ./artifacts/dojoswap_router.wasm \
 --yes --gas-prices=500000000inj --gas=20000000 \
 --node=https://testnet.sentry.tm.injective.network:443
 
+injectived tx wasm store ./artifacts/dojoswap_staking.wasm \
+--from="inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt" \
+--chain-id="injective-888" \
+--yes --gas-prices=500000000inj --gas=20000000 \
+--node=https://testnet.sentry.tm.injective.network:443
+
 
 ```
 
