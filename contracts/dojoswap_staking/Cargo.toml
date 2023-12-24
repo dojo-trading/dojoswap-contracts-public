@@ -34,14 +34,14 @@ overflow-checks = true
 backtraces = ["cosmwasm-std/backtraces"]
 
 [dependencies]
-cw20 = "0.8.0"
-cosmwasm-std = { version = "0.16.0", features = ["iterator"] }
-cosmwasm-storage = { version = "0.16.0", features = ["iterator"] }
+cw20 = {version = "0.13.2"}
+cosmwasm-std = { version = "1.0.0" }
+cosmwasm-storage = { version = "1.0.0" }
 schemars = "0.8.1"
 serde = { version = "1.0.103", default-features = false, features = ["derive"] }
 dojo_staking_helpers = { version = "0.3.0", path = "../../packages/dojo_staking_helpers" }
-cw2 = "1.1.2"
-protobuf = "3.3.0"
+cw2 = "0.13.4"
+protobuf = { version = "2", features = ["with-bytes"] }
 
 [dev-dependencies]
 cosmwasm-schema = { version = "1.0.0" }
