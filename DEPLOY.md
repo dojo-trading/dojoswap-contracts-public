@@ -59,6 +59,8 @@ DojoswapRouter - 291
 Multicall - 293
 Staking - 301
 
+New DojoswapFactory - 305
+New DojoswapPair - 306
 
 
 ## Init
@@ -228,3 +230,16 @@ injectived query wasm contract-state smart inj1pc2vxcmnyzawnwkf03n2ggvt997avtuwa
 injectived query wasm contract-state smart inj1l73x8hh6du0h8upp65r7ltzpj5twadtp5490n0 '{"minter": {}}' --node=https://sentry.tm.injective.network:443
 ```
 
+
+### Migrate
+```sh
+export CONTRACT=inj1pc2vxcmnyzawnwkf03n2ggvt997avtuwagqngk
+export INJ_ADDRESS=inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt
+export CONFIG='{}'
+export CODE_ID=305
+injectived tx wasm migrate $CONTRACT $CODE_ID "$CONFIG" --from=$(echo $INJ_ADDRESS) \
+--chain-id="injective-1" \
+--yes --fees=1000000000000000inj --gas=2000000 \
+--node="https://sentry.tm.injective.network:443" \
+--output json
+```
