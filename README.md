@@ -18,7 +18,7 @@ Uniswap-inspired automated market-maker (AMM) protocol powered by Smart Contract
 
    Mainnet: `inj1zfkh35ff8gmvczve27yr24u26cq0zmh723gh9v`
 
-   Testnet: `inj13x5m8l5whmhvv2le44aq0j6ukr8h5xh8atxpra`
+   Testnet: `inj14mxpetzg9sur0g6m39zu9m9n2ajxvlx4ytlgq3`
 
 * dojoswap_pair
 

@@ -14,7 +14,6 @@ use crate::state::{
     PAIRS, TMP_PAIR_INFO,
 };
 
-use protobuf::Message;
 use dojoswap::asset::{Asset, AssetInfo, AssetInfoRaw, PairInfo, PairInfoRaw};
 use dojoswap::factory::{
     ConfigResponse, ExecuteMsg, InstantiateMsg, MigrateMsg, NativeTokenDecimalsResponse,
@@ -25,6 +24,7 @@ use dojoswap::pair::{
     MigrateMsg as PairMigrateMsg,
 };
 use dojoswap::util::migrate_version;
+use protobuf::Message;
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:dojoswap-factory";
@@ -55,6 +55,10 @@ pub fn instantiate(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
     match msg {
+        ExecuteMsg::AdminConfig {
+            asset_infos,
+            asset_decimals,
+        } => execute_admin_config(deps, env, info, asset_infos, asset_decimals),
         ExecuteMsg::UpdateConfig {
             owner,
             token_code_id,
@@ -68,6 +72,43 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
             execute_migrate_pair(deps, env, info, contract, code_id)
         }
     }
+}
+
+// Only owner can execute it
+pub fn execute_admin_config(
+    deps: DepsMut,
+    _env: Env,
+    info: MessageInfo,
+    asset_infos: [AssetInfo; 2],
+    asset_decimals: [u8; 2],
+) -> StdResult<Response> {
+    let config: Config = CONFIG.load(deps.storage)?;
+
+    // permission check
+    if deps.api.addr_canonicalize(info.sender.as_str())? != config.owner {
+        return Err(StdError::generic_err("unauthorized"));
+    }
+
+    let raw_infos = [
+        asset_infos[0].to_raw(deps.api)?,
+        asset_infos[1].to_raw(deps.api)?,
+    ];
+
+    let pair_key = pair_key(&raw_infos);
+    let pair_info: PairInfoRaw = PAIRS.load(deps.storage, &pair_key)?;
+
+    PAIRS.save(
+        deps.storage,
+        &pair_key,
+        &PairInfoRaw {
+            liquidity_token: pair_info.liquidity_token,
+            contract_addr: pair_info.contract_addr,
+            asset_infos: raw_infos,
+            asset_decimals,
+        },
+    )?;
+
+    Ok(Response::new().add_attribute("action", "update_config"))
 }
 
 // Only owner can execute it
@@ -388,7 +429,7 @@ pub fn query_native_token_decimal(
     Ok(NativeTokenDecimalsResponse { decimals })
 }
 
-const TARGET_CONTRACT_VERSION: &str = "0.1.0";
+const TARGET_CONTRACT_VERSION: &str = "0.1.1";
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     migrate_version(

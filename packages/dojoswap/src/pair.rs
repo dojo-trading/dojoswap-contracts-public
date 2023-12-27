@@ -34,6 +34,10 @@ pub enum ExecuteMsg {
         to: Option<String>,
         deadline: Option<u64>,
     },
+    AdminConfigure {
+        assets: [AssetInfo; 2],
+        asset_decimals: [u8; 2],
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]

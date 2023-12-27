@@ -9,35 +9,12 @@ docker run --rm -v "$(pwd)":/code \
 
 ## Deploy
 ```
-injectived tx wasm store ./artifacts/dojoswap_token.wasm \
---from="inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt" \
---chain-id="injective-1" \
---yes --gas-prices=500000000inj --gas=20000000 \
---node=https://sentry.tm.injective.network:443
 
-injectived tx wasm store ./artifacts/dojoswap_pair.wasm \
+injectived tx wasm store ./artifacts/launchpad-aarch64.wasm \
 --from="inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt" \
---chain-id="injective-1" \
+--chain-id="injective-888" \
 --yes --gas-prices=500000000inj --gas=20000000 \
---node=https://sentry.tm.injective.network:443
-
-injectived tx wasm store ./artifacts/dojoswap_factory.wasm \
---from="inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt" \
---chain-id="injective-1" \
---yes --gas-prices=500000000inj --gas=20000000 \
---node=https://sentry.tm.injective.network:443
-
-injectived tx wasm store ./artifacts/dojoswap_router.wasm \
---from="inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt" \
---chain-id="injective-1" \
---yes --gas-prices=500000000inj --gas=20000000 \
---node=https://sentry.tm.injective.network:443
-
-injectived tx wasm store ./artifacts/dojoswap_staking.wasm \
---from="inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt" \
---chain-id="injective-1" \
---yes --gas-prices=500000000inj --gas=20000000 \
---node=https://sentry.tm.injective.network:443
+--node=https://testnet.sentry.tm.injective.network:443
 
 
 ```
@@ -50,6 +27,7 @@ DojoswapFactory - 4682
 DojoswapRouter - 4444
 Multicall - 4783
 Staking - 5053
+Launchpad - 5796
 
 Mainnet
 DojoswapToken - 292
@@ -80,19 +58,24 @@ Staking
 {"dojo_token":"inj1l73x8hh6du0h8upp65r7ltzpj5twadtp5490n0", "staking_token": "inj15xk5d4d3we8z9s9avcqfns2xsrqq9u5mgaw6q6", "distribution_schedule": [[1703653200, 1704171600, "10000000000000000000000"]]}
 ```
 
+Launchpad
+```
+{"admin":"inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt","raising_denom":"inj","offering_token":"inj1375v9e5awxf340cgv2pzh4seu074lxw0d092gd","start_time":1703653200,"end_time":1704171600,"raising_amount":"10000000000000000000000","offering_amount":"1000000000000000000000000"}
+```
+
 ### Core Init
 ```
 export INJ_ADDRESS=inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt
-export CODE_ID=301
-export INIT='{"dojo_token":"inj1l73x8hh6du0h8upp65r7ltzpj5twadtp5490n0", "staking_token": "inj1ytl5y7plqak300e42akc3pzn2j9hp35lw2pv3k", "distribution_schedule": [[1703653200, 1704171600, "3000000000000000000000"]]}'
+export CODE_ID=5796
+export INIT='{"admin":"inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt","raising_denom":"inj","offering_token":"inj1375v9e5awxf340cgv2pzh4seu074lxw0d092gd","start_time":1703653200,"end_time":1704171600,"raising_amount":"10000000000000000000000","offering_amount":"1000000000000000000000000"}'
 
-injectived tx wasm instantiate $CODE_ID $INIT --label="Dojoswap Deployment" --from=$(echo $INJ_ADDRESS) --chain-id="injective-1" --yes --gas-prices=500000000inj --gas=20000000 --admin=$(echo $INJ_ADDRESS) --node=https://sentry.tm.injective.network:443
+injectived tx wasm instantiate $CODE_ID $INIT --label="Dojoswap Deployment" --from=$(echo $INJ_ADDRESS) --chain-id="injective-888" --yes --gas-prices=500000000inj --gas=20000000 --admin=$(echo $INJ_ADDRESS) --node=https://testnet.sentry.tm.injective.network:443
 ```
 
 ### Factory Settings
 ```sh
 # send some native tokens as the factory contract will check for fund existence
-injectived tx bank send inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt inj1pc2vxcmnyzawnwkf03n2ggvt997avtuwagqngk 1peggy0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599 --node=https://sentry.tm.injective.network:443 --chain-id="injective-1" --gas-prices=500000000inj
+injectived tx bank send inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt inj1pc2vxcmnyzawnwkf03n2ggvt997avtuwagqngk 1peggy0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599 --node=https://testnet.sentry.tm.injective.network:443 --chain-id="injective-888" --gas-prices=500000000inj
 
 
 
@@ -101,9 +84,9 @@ export CONTRACT=inj1pc2vxcmnyzawnwkf03n2ggvt997avtuwagqngk
 export INJ_ADDRESS=inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt
 CONFIG='{"add_native_token_decimals":{"denom": "peggy0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", "decimals": 8}}'
 injectived tx wasm execute $CONTRACT "$CONFIG" --from=$(echo $INJ_ADDRESS) \
---chain-id="injective-1" \
+--chain-id="injective-888" \
 --yes --fees=1000000000000000inj --gas=2000000 \
---node="https://sentry.tm.injective.network:443" \
+--node="https://testnet.sentry.tm.injective.network:443" \
 --output json
 ```
 
@@ -113,7 +96,7 @@ export INJ_ADDRESS=inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt
 export CODE_ID=292
 export INIT='{"name":"Point Token", "symbol": "POINT", "decimals": 18, "initial_balances": [{"address": "inj1x26aln79hxrfm8c6v00208wlumrc0l6qtrtn8y", "amount": "100000000000000000000000000000"}]}'
 
-injectived tx wasm instantiate $CODE_ID $INIT --label="Dojoswap Deployment" --from=$(echo $INJ_ADDRESS) --chain-id="injective-1" --yes --gas-prices=500000000inj --gas=20000000 --admin=$(echo $INJ_ADDRESS) --node=https://sentry.tm.injective.network:443
+injectived tx wasm instantiate $CODE_ID $INIT --label="Dojoswap Deployment" --from=$(echo $INJ_ADDRESS) --chain-id="injective-888" --yes --gas-prices=500000000inj --gas=20000000 --admin=$(echo $INJ_ADDRESS) --node=https://testnet.sentry.tm.injective.network:443
 ```
 
 ### Staking Init
@@ -125,9 +108,9 @@ export INJ_ADDRESS=inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt
 export CONTRACT=inj1ewdcesmpdq5vz67a2rmfr682gjqecedymqm74f
 export CONFIG='{"update_config": {"distribution_schedule": [[1703653200, 1704171600, "100000000000000000000000"]]}}'
 injectived tx wasm execute $CONTRACT "$CONFIG" --from=$(echo $INJ_ADDRESS) \
---chain-id="injective-1" \
+--chain-id="injective-888" \
 --yes --fees=1000000000000000inj --gas=2000000 \
---node="https://sentry.tm.injective.network:443" \
+--node="https://testnet.sentry.tm.injective.network:443" \
 --output json
 
 
@@ -136,18 +119,18 @@ export INJ_ADDRESS=inj1x26aln79hxrfm8c6v00208wlumrc0l6qtrtn8y
 export CONTRACT=inj1l73x8hh6du0h8upp65r7ltzpj5twadtp5490n0
 export CONFIG='{"transfer":{"recipient": "inj1ewdcesmpdq5vz67a2rmfr682gjqecedymqm74f", "amount": "1000000000000000000000000000000"}}'
 injectived tx wasm execute $CONTRACT "$CONFIG" --from=$(echo $INJ_ADDRESS) \
---chain-id="injective-1" \
+--chain-id="injective-888" \
 --yes --fees=1000000000000000inj --gas=2000000 \
---node="https://sentry.tm.injective.network:443" \
+--node="https://testnet.sentry.tm.injective.network:443" \
 --output json
 
 # sends reward tokens to contract
 export CONTRACT=inj16l3txcsmjcs6nrc3s0se0388r39j8wn73n45cy
 export CONFIG='{"send":{"contract": "inj18j3tn5hrf3uex5lw2egp5epl6xuwnmu2rt2k0z", "amount": "10000000000000000000000", "msg": ""}}'
 injectived tx wasm execute $CONTRACT "$CONFIG" --from=$(echo $INJ_ADDRESS) \
---chain-id="injective-1" \
+--chain-id="injective-888" \
 --yes --fees=1000000000000000inj --gas=2000000 \
---node="https://sentry.tm.injective.network:443" \
+--node="https://testnet.sentry.tm.injective.network:443" \
 --output json
 
 ```
@@ -159,9 +142,9 @@ export CONTRACT=inj1pc2vxcmnyzawnwkf03n2ggvt997avtuwagqngk
 export INJ_ADDRESS=inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt
 export CONFIG='{"create_pair":{"assets":[{"info":{"token":{"contract_addr":"peggy0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}},"amount":"0"},{"info":{"native_token":{"denom":"peggy0xdAC17F958D2ee523a2206206994597C13D831ec7"}},"amount":"0"}]}}'
 injectived tx wasm execute $CONTRACT "$CONFIG" --from=$(echo $INJ_ADDRESS) \
---chain-id="injective-1" \
+--chain-id="injective-888" \
 --yes --fees=1000000000000000inj --gas=2000000 \
---node="https://sentry.tm.injective.network:443" \
+--node="https://testnet.sentry.tm.injective.network:443" \
 --output json
 
 # Denom-Denom pair
@@ -169,9 +152,9 @@ export CONTRACT=inj1pc2vxcmnyzawnwkf03n2ggvt997avtuwagqngk
 export INJ_ADDRESS=inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt
 export CONFIG='{"create_pair":{"assets":[{"info":{"native_token":{"denom":"peggy0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}},"amount":"0"},{"info":{"native_token":{"denom":"peggy0xdAC17F958D2ee523a2206206994597C13D831ec7"}},"amount":"0"}]}}'
 injectived tx wasm execute $CONTRACT "$CONFIG" --from=$(echo $INJ_ADDRESS) \
---chain-id="injective-1" \
+--chain-id="injective-888" \
 --yes --fees=1000000000000000inj --gas=2000000 \
---node="https://sentry.tm.injective.network:443" \
+--node="https://testnet.sentry.tm.injective.network:443" \
 --output json
 
 # updating of configuration
@@ -179,9 +162,9 @@ export CONTRACT=inj1pc2vxcmnyzawnwkf03n2ggvt997avtuwagqngk
 export INJ_ADDRESS=inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt
 export CONFIG='{"update_config": {"owner": "inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt", "token_code_id": 4441, "pair_code_id": 4697}}'
 injectived tx wasm execute $CONTRACT "$CONFIG" --from=$(echo $INJ_ADDRESS) \
---chain-id="injective-1" \
+--chain-id="injective-888" \
 --yes --fees=1000000000000000inj --gas=2000000 \
---node="https://sentry.tm.injective.network:443" \
+--node="https://testnet.sentry.tm.injective.network:443" \
 --output json
 ```
 
@@ -192,9 +175,9 @@ export CONTRACT=inj1h0mpv48ctcsmydymh2hnkal7hla5gl4gftemqv
 export INJ_ADDRESS=inj12qy3algm6e0zdpv8zxvauzquumuvd39ccdcdjt
 export CONFIG='{"provide_liquidity":{"assets":[{"info":{"native_token":{"denom":"peggy0xdAC17F958D2ee523a2206206994597C13D831ec7"}},"amount":"40200"},{"info":{"native_token":{"denom":"inj"}},"amount":"1000000000000000"}]}}'
 injectived tx wasm execute $CONTRACT "$CONFIG" --from=$(echo $INJ_ADDRESS) \
---chain-id="injective-1" \
+--chain-id="injective-888" \
 --yes --fees=1000000000000000inj --gas=2000000 \
---node="https://sentry.tm.injective.network:443" \
+--node="https://testnet.sentry.tm.injective.network:443" \
 --amount="40200peggy0xdAC17F958D2ee523a2206206994597C13D831ec7,1000000000000000inj" \
 --output json
 ```
@@ -210,6 +193,7 @@ INJ-USDT Staking - inj1624rmgycjv8xfyu4xeprguju2smcq46c94x8hd
 
 DojoToken - inj16l3txcsmjcs6nrc3s0se0388r39j8wn73n45cy
 TestToken - inj1e8ppkcdttmvqywcx84rjqf0l2x9gcutlmft4l0
+Launchpad - inj1h6m6erreyp72fthqj5esxa25nre4arg65g5us9
 
 Mainnet
 
@@ -218,13 +202,13 @@ PointToken - inj1l73x8hh6du0h8upp65r7ltzpj5twadtp5490n0
 
 #### Get Config
 ```
-injectived query wasm contract-state smart inj1pc2vxcmnyzawnwkf03n2ggvt997avtuwagqngk '{"config": {}}' --node=https://sentry.tm.injective.network:443
+injectived query wasm contract-state smart inj1pc2vxcmnyzawnwkf03n2ggvt997avtuwagqngk '{"config": {}}' --node=https://testnet.sentry.tm.injective.network:443
 
 
-injectived query wasm contract-state smart inj1pc2vxcmnyzawnwkf03n2ggvt997avtuwagqngk '{"pairs": {}}' --node=https://sentry.tm.injective.network:443
+injectived query wasm contract-state smart inj1pc2vxcmnyzawnwkf03n2ggvt997avtuwagqngk '{"pairs": {}}' --node=https://testnet.sentry.tm.injective.network:443
 
-injectived query wasm contract-state smart inj1pc2vxcmnyzawnwkf03n2ggvt997avtuwagqngk '{"native_token_decimals": {"denom": "peggy0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}}' --node=https://sentry.tm.injective.network:443
+injectived query wasm contract-state smart inj1pc2vxcmnyzawnwkf03n2ggvt997avtuwagqngk '{"native_token_decimals": {"denom": "peggy0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}}' --node=https://testnet.sentry.tm.injective.network:443
 
-injectived query wasm contract-state smart inj1l73x8hh6du0h8upp65r7ltzpj5twadtp5490n0 '{"minter": {}}' --node=https://sentry.tm.injective.network:443
+injectived query wasm contract-state smart inj1l73x8hh6du0h8upp65r7ltzpj5twadtp5490n0 '{"minter": {}}' --node=https://testnet.sentry.tm.injective.network:443
 ```
 

@@ -13,11 +13,6 @@ use cosmwasm_std::{
 
 use cw2::set_contract_version;
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg, MinterResponse};
-use protobuf::Message;
-use std::cmp::Ordering;
-use std::convert::TryInto;
-use std::ops::Mul;
-use std::str::FromStr;
 use dojoswap::asset::{Asset, AssetInfo, PairInfo, PairInfoRaw};
 use dojoswap::pair::{
     Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, PoolResponse, QueryMsg,
@@ -26,6 +21,11 @@ use dojoswap::pair::{
 use dojoswap::querier::query_token_info;
 use dojoswap::token::InstantiateMsg as TokenInstantiateMsg;
 use dojoswap::util::migrate_version;
+use protobuf::Message;
+use std::cmp::Ordering;
+use std::convert::TryInto;
+use std::ops::Mul;
+use std::str::FromStr;
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:dojoswap-pair";
@@ -93,6 +93,10 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
+        ExecuteMsg::AdminConfigure {
+            assets,
+            asset_decimals,
+        } => admin_configure(deps, env, info, assets, asset_decimals),
         ExecuteMsg::Receive(msg) => receive_cw20(deps, env, info, msg),
         ExecuteMsg::ProvideLiquidity {
             assets,
@@ -138,6 +142,32 @@ pub fn execute(
             )
         }
     }
+}
+
+pub fn admin_configure(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    assets: [AssetInfo; 2],
+    asset_decimals: [u8; 2],
+) -> Result<Response, ContractError> {
+    // permission check
+    if info.sender.as_str() != FEE_COLLECTOR {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    let config: PairInfoRaw = PAIR_INFO.load(deps.storage)?;
+
+    let pair_info: &PairInfoRaw = &PairInfoRaw {
+        contract_addr: deps.api.addr_canonicalize(env.contract.address.as_str())?,
+        liquidity_token: config.liquidity_token,
+        asset_infos: [assets[0].to_raw(deps.api)?, assets[1].to_raw(deps.api)?],
+        asset_decimals,
+    };
+
+    PAIR_INFO.save(deps.storage, pair_info)?;
+
+    Ok(Response::new().add_attributes(vec![("action", "admin_configure")]))
 }
 
 pub fn receive_cw20(
@@ -538,12 +568,15 @@ pub fn swap(
     if !return_amount.is_zero() {
         messages.push(return_asset.into_msg(receiver.clone())?);
     }
-    
+
     // Sends half of commissions as fees to fee collector
     if !commission_amount.is_zero() {
         let commission_asset = Asset {
             info: ask_pool.info.clone(),
-            amount: commission_amount.checked_div(Uint128::from(2u128)).ok().unwrap(),
+            amount: commission_amount
+                .checked_div(Uint128::from(2u128))
+                .ok()
+                .unwrap(),
         };
         messages.push(commission_asset.into_msg(Addr::unchecked(FEE_COLLECTOR))?);
     }
@@ -873,7 +906,7 @@ pub fn assert_deadline(blocktime: u64, deadline: Option<u64>) -> Result<(), Cont
     Ok(())
 }
 
-const TARGET_CONTRACT_VERSION: &str = "0.1.1";
+const TARGET_CONTRACT_VERSION: &str = "0.1.2";
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, ContractError> {
     migrate_version(

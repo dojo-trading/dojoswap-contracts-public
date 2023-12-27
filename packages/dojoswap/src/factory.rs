@@ -14,6 +14,10 @@ pub struct InstantiateMsg {
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     /// UpdateConfig update relevant code IDs
+    AdminConfig {
+        asset_infos: [AssetInfo; 2],
+        asset_decimals: [u8; 2],
+    },
     UpdateConfig {
         owner: Option<String>,
         token_code_id: Option<u64>,
