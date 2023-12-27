@@ -906,7 +906,7 @@ pub fn assert_deadline(blocktime: u64, deadline: Option<u64>) -> Result<(), Cont
     Ok(())
 }
 
-const TARGET_CONTRACT_VERSION: &str = "0.2.1";
+const TARGET_CONTRACT_VERSION: &str = "0.2.0";
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, ContractError> {
     migrate_version(
