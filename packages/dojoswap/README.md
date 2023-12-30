@@ -1,4 +1,4 @@
-# Terraswap: Common Types
+# Dojoswap: Common Types
 
 This is a collection of common types and the queriers which are commonly used in dojoswap contracts.
 

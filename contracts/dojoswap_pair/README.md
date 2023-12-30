@@ -52,7 +52,7 @@ A `deadline` sets a time after which a transaction can no longer be executed. Th
         {
           "info": {
             "token": {
-              "contract_addr": "terra..."
+              "contract_addr": "inj..."
             }
           },
           "amount": "1000000"
@@ -80,7 +80,7 @@ A `deadline` sets a time after which a transaction can no longer be executed. Th
         {
           "info": {
             "token": {
-              "contract_addr": "terra..."
+              "contract_addr": "inj..."
             }
           },
           "amount": "1000000"
