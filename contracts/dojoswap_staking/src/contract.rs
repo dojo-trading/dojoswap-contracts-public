@@ -2,7 +2,7 @@
 use cosmwasm_std::entry_point;
 
 use cosmwasm_std::{
-    from_binary, to_binary, Addr, Binary, CanonicalAddr, CosmosMsg, Decimal, Deps, DepsMut, Env,
+    from_json, to_json_binary, Addr, Binary, CanonicalAddr, CosmosMsg, Decimal, Deps, DepsMut, Env,
     MessageInfo, Response, StdError, StdResult, Uint128, WasmMsg,
 };
 
@@ -11,12 +11,9 @@ use dojo_staking_helpers::staking::{
     StakerInfoResponse, StateResponse,
 };
 
-use crate::{
-    querier::query_anc_minter,
-    state::{
-        read_config, read_staker_info, read_state, remove_staker_info, store_config,
-        store_staker_info, store_state, Config, StakerInfo, State,
-    },
+use crate::state::{
+    read_config, read_gov, read_staker_info, read_state, remove_staker_info, store_config,
+    store_gov, store_staker_info, store_state, Config, StakerInfo, State,
 };
 
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
@@ -26,7 +23,7 @@ use std::collections::BTreeMap;
 pub fn instantiate(
     deps: DepsMut,
     env: Env,
-    _info: MessageInfo,
+    info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
     store_config(
@@ -47,6 +44,8 @@ pub fn instantiate(
         },
     )?;
 
+    store_gov(deps.storage, &info.sender.to_string())?;
+
     Ok(Response::default())
 }
 
@@ -62,6 +61,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
         ExecuteMsg::UpdateConfig {
             distribution_schedule,
         } => update_config(deps, env, info, distribution_schedule),
+        ExecuteMsg::UpdateGov { gov } => update_gov(deps, env, info, gov),
     }
 }
 
@@ -73,7 +73,7 @@ pub fn receive_cw20(
 ) -> StdResult<Response> {
     let config: Config = read_config(deps.storage)?;
 
-    match from_binary(&cw20_msg.msg) {
+    match from_json(&cw20_msg.msg) {
         Ok(Cw20HookMsg::Bond {}) => {
             // only staking token contract can execute this message
             if config.staking_token != deps.api.addr_canonicalize(info.sender.as_str())? {
@@ -144,7 +144,7 @@ pub fn unbond(deps: DepsMut, env: Env, info: MessageInfo, amount: Uint128) -> St
     Ok(Response::new()
         .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: deps.api.addr_humanize(&config.staking_token)?.to_string(),
-            msg: to_binary(&Cw20ExecuteMsg::Transfer {
+            msg: to_json_binary(&Cw20ExecuteMsg::Transfer {
                 recipient: info.sender.to_string(),
                 amount,
             })?,
@@ -186,7 +186,7 @@ pub fn withdraw(deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Respons
     Ok(Response::new()
         .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: deps.api.addr_humanize(&config.dojo_token)?.to_string(),
-            msg: to_binary(&Cw20ExecuteMsg::Transfer {
+            msg: to_json_binary(&Cw20ExecuteMsg::Transfer {
                 recipient: info.sender.to_string(),
                 amount,
             })?,
@@ -209,12 +209,11 @@ pub fn update_config(
     let config: Config = read_config(deps.storage)?;
     let state: State = read_state(deps.storage)?;
 
+    // get gov address
     let sender_addr_raw: CanonicalAddr = deps.api.addr_canonicalize(info.sender.as_str())?;
-    let dojo_token: Addr = deps.api.addr_humanize(&config.dojo_token)?;
-    let gov_addr_raw: CanonicalAddr = deps
-        .api
-        .addr_canonicalize(&query_anc_minter(&deps.querier, dojo_token)?)?;
-    if sender_addr_raw != gov_addr_raw {
+    let gov_addr = read_gov(deps.storage)?;
+
+    if sender_addr_raw != deps.api.addr_canonicalize(&gov_addr)? {
         return Err(StdError::generic_err("unauthorized"));
     }
 
@@ -230,6 +229,20 @@ pub fn update_config(
     Ok(Response::new().add_attributes(vec![("action", "update_config")]))
 }
 
+pub fn update_gov(deps: DepsMut, _env: Env, info: MessageInfo, gov: String) -> StdResult<Response> {
+    // get gov address
+    let sender_addr_raw: Addr = deps.api.addr_validate(info.sender.as_str())?;
+    let gov_addr = read_gov(deps.storage)?;
+
+    if sender_addr_raw != deps.api.addr_validate(&gov_addr)? {
+        return Err(StdError::generic_err("unauthorized"));
+    }
+
+    store_gov(deps.storage, &gov)?;
+
+    Ok(Response::new().add_attributes(vec![("action", "update_gov")]))
+}
+
 pub fn migrate_staking(
     deps: DepsMut,
     env: Env,
@@ -241,11 +254,10 @@ pub fn migrate_staking(
     let mut state: State = read_state(deps.storage)?;
     let dojo_token: Addr = deps.api.addr_humanize(&config.dojo_token)?;
 
-    // get gov address by querying anc token minter
-    let gov_addr_raw: CanonicalAddr = deps
-        .api
-        .addr_canonicalize(&query_anc_minter(&deps.querier, dojo_token.clone())?)?;
-    if sender_addr_raw != gov_addr_raw {
+    // get gov address
+    let gov_addr = read_gov(deps.storage)?;
+
+    if sender_addr_raw != deps.api.addr_canonicalize(&gov_addr)? {
         return Err(StdError::generic_err("unauthorized"));
     }
 
@@ -292,7 +304,7 @@ pub fn migrate_staking(
     Ok(Response::new()
         .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: dojo_token.to_string(),
-            msg: to_binary(&Cw20ExecuteMsg::Transfer {
+            msg: to_json_binary(&Cw20ExecuteMsg::Transfer {
                 recipient: new_staking_contract,
                 amount: remaining_anc,
             })?,
@@ -360,10 +372,11 @@ fn compute_staker_reward(state: &State, staker_info: &mut StakerInfo) -> StdResu
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::Config {} => to_binary(&query_config(deps)?),
-        QueryMsg::State { block_time } => to_binary(&query_state(deps, block_time)?),
+        QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
+        QueryMsg::GetGov {} => to_json_binary(&query_gov(deps)?),
+        QueryMsg::State { block_time } => to_json_binary(&query_state(deps, block_time)?),
         QueryMsg::StakerInfo { staker, block_time } => {
-            to_binary(&query_staker_info(deps, staker, block_time)?)
+            to_json_binary(&query_staker_info(deps, staker, block_time)?)
         }
     }
 }
@@ -377,6 +390,12 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     };
 
     Ok(resp)
+}
+
+pub fn query_gov(deps: Deps) -> StdResult<String> {
+    let state = read_gov(deps.storage)?;
+
+    Ok(state)
 }
 
 pub fn query_state(deps: Deps, block_time: Option<u64>) -> StdResult<StateResponse> {

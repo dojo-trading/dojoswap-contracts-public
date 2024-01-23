@@ -5,7 +5,7 @@ use crate::state::{pair_key, TmpPairInfo, TMP_PAIR_INFO};
 
 use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage, MOCK_CONTRACT_ADDR};
 use cosmwasm_std::{
-    attr, coin, coins, from_binary, to_binary, Addr, CosmosMsg, OwnedDeps, Reply, ReplyOn,
+    attr, coin, coins, from_json, to_json_binary, Addr, CosmosMsg, OwnedDeps, Reply, ReplyOn,
     Response, StdError, SubMsg, SubMsgResponse, SubMsgResult, Uint128, WasmMsg,
 };
 use cw20::Cw20ExecuteMsg;
@@ -33,7 +33,7 @@ fn proper_initialization() {
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
     let query_res = query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap();
-    let config_res: ConfigResponse = from_binary(&query_res).unwrap();
+    let config_res: ConfigResponse = from_json(&query_res).unwrap();
     assert_eq!(123u64, config_res.token_code_id);
     assert_eq!(321u64, config_res.pair_code_id);
     assert_eq!("addr0000".to_string(), config_res.owner);
@@ -66,7 +66,7 @@ fn update_config() {
 
     // it worked, let's query the state
     let query_res = query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap();
-    let config_res: ConfigResponse = from_binary(&query_res).unwrap();
+    let config_res: ConfigResponse = from_json(&query_res).unwrap();
     assert_eq!(123u64, config_res.token_code_id);
     assert_eq!(321u64, config_res.pair_code_id);
     assert_eq!("addr0001".to_string(), config_res.owner);
@@ -85,7 +85,7 @@ fn update_config() {
 
     // it worked, let's query the state
     let query_res = query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap();
-    let config_res: ConfigResponse = from_binary(&query_res).unwrap();
+    let config_res: ConfigResponse = from_json(&query_res).unwrap();
     assert_eq!(200u64, config_res.token_code_id);
     assert_eq!(100u64, config_res.pair_code_id);
     assert_eq!("addr0001".to_string(), config_res.owner);
@@ -169,7 +169,7 @@ fn create_pair() {
             gas_limit: None,
             reply_on: ReplyOn::Success,
             msg: WasmMsg::Instantiate {
-                msg: to_binary(&PairInstantiateMsg {
+                msg: to_json_binary(&PairInstantiateMsg {
                     asset_infos: [
                         AssetInfo::NativeToken {
                             denom: "uusd".to_string(),
@@ -257,7 +257,7 @@ fn create_pair_native_token_and_ibc_token() {
             gas_limit: None,
             reply_on: ReplyOn::Success,
             msg: WasmMsg::Instantiate {
-                msg: to_binary(&PairInstantiateMsg {
+                msg: to_json_binary(&PairInstantiateMsg {
                     asset_infos: [
                         AssetInfo::NativeToken {
                             denom: "uusd".to_string(),
@@ -580,7 +580,7 @@ fn reply_create_pair_with_provide() {
             id: 0,
             msg: CosmosMsg::Wasm(WasmMsg::Execute {
                 contract_addr: "asset0000".to_string(),
-                msg: to_binary(&Cw20ExecuteMsg::IncreaseAllowance {
+                msg: to_json_binary(&Cw20ExecuteMsg::IncreaseAllowance {
                     spender: "pair0000".to_string(),
                     amount: Uint128::from(100u128),
                     expires: None,
@@ -598,7 +598,7 @@ fn reply_create_pair_with_provide() {
             id: 0,
             msg: CosmosMsg::Wasm(WasmMsg::Execute {
                 contract_addr: "asset0000".to_string(),
-                msg: to_binary(&Cw20ExecuteMsg::TransferFrom {
+                msg: to_json_binary(&Cw20ExecuteMsg::TransferFrom {
                     owner: "addr0000".to_string(),
                     amount: Uint128::from(100u128),
                     recipient: MOCK_CONTRACT_ADDR.to_string(),
@@ -616,7 +616,7 @@ fn reply_create_pair_with_provide() {
             id: 0,
             msg: CosmosMsg::Wasm(WasmMsg::Execute {
                 contract_addr: "pair0000".to_string(),
-                msg: to_binary(&PairExecuteMsg::ProvideLiquidity {
+                msg: to_json_binary(&PairExecuteMsg::ProvideLiquidity {
                     assets,
                     receiver: Some("addr0000".to_string()),
                     deadline: None,
@@ -684,7 +684,7 @@ fn normal_add_allow_native_token() {
         },
     )
     .unwrap();
-    let res: NativeTokenDecimalsResponse = from_binary(&res).unwrap();
+    let res: NativeTokenDecimalsResponse = from_json(&res).unwrap();
     assert_eq!(6u8, res.decimals)
 }
 
@@ -749,7 +749,7 @@ fn append_add_allow_native_token_with_already_exist_token() {
         },
     )
     .unwrap();
-    let res: NativeTokenDecimalsResponse = from_binary(&res).unwrap();
+    let res: NativeTokenDecimalsResponse = from_json(&res).unwrap();
     assert_eq!(6u8, res.decimals);
 
     let msg = ExecuteMsg::AddNativeTokenDecimals {
@@ -767,7 +767,7 @@ fn append_add_allow_native_token_with_already_exist_token() {
         },
     )
     .unwrap();
-    let res: NativeTokenDecimalsResponse = from_binary(&res).unwrap();
+    let res: NativeTokenDecimalsResponse = from_json(&res).unwrap();
     assert_eq!(7u8, res.decimals)
 }
 
@@ -788,7 +788,7 @@ fn normal_migrate_pair() {
         Response::new().add_message(CosmosMsg::Wasm(WasmMsg::Migrate {
             contract_addr: "contract0000".to_string(),
             new_code_id: 123u64,
-            msg: to_binary(&PairMigrateMsg {}).unwrap(),
+            msg: to_json_binary(&PairMigrateMsg {}).unwrap(),
         })),
     );
 }
@@ -810,7 +810,7 @@ fn normal_migrate_pair_with_none_code_id_will_config_code_id() {
         Response::new().add_message(CosmosMsg::Wasm(WasmMsg::Migrate {
             contract_addr: "contract0000".to_string(),
             new_code_id: 321u64,
-            msg: to_binary(&PairMigrateMsg {}).unwrap(),
+            msg: to_json_binary(&PairMigrateMsg {}).unwrap(),
         })),
     );
 }

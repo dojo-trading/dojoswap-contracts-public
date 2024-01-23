@@ -28,6 +28,9 @@ pub enum ExecuteMsg {
     UpdateConfig {
         distribution_schedule: Vec<(u64, u64, Uint128)>,
     },
+    UpdateGov {
+        gov: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -45,6 +48,7 @@ pub struct MigrateMsg {}
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
     Config {},
+    GetGov {},
     State {
         block_time: Option<u64>,
     },

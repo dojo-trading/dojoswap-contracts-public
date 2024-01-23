@@ -38,6 +38,11 @@ pub fn instantiate(
         total_amount: Uint128::zero(),
         allow_claim: false,
     };
+
+    if msg.start_time > msg.end_time {
+        return Err(StdError::generic_err("Start time must be before end time"));
+    }
+
     STATE.save(deps.storage, &state)?;
 
     Ok(Response::default())
@@ -75,7 +80,7 @@ pub fn execute(
             raise_amount,
             offer_amount,
         } => final_withdraw(deps, env, info, raise_amount, offer_amount),
-        ExecuteMsg::FlipAllowClaim {} => flip_allow_claim(deps),
+        ExecuteMsg::FlipAllowClaim {} => flip_allow_claim(deps, info),
     }
 }
 
@@ -107,6 +112,14 @@ pub fn update_config(
 
     if state.admin != info.sender {
         return Err(StdError::generic_err("Unauthorized: not admin"));
+    }
+    
+    if state.total_amount != Uint128::zero() {
+        return Err(StdError::generic_err("Unauthorized: launchpad already in progress"));
+    }
+
+    if start_time > end_time {
+        return Err(StdError::generic_err("Start time must be before end time"));
     }
 
     if raising_denom.is_some() {
@@ -238,7 +251,7 @@ fn harvest(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, StdEr
         messages.push(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: state.offering_token.to_string(),
             msg: to_json_binary(&Cw20ExecuteMsg::Transfer {
-                recipient: env.contract.address.to_string(),
+                recipient: info.sender.to_string(),
                 amount: offering_amount,
             })?,
             funds: vec![],
@@ -330,8 +343,13 @@ pub fn final_withdraw(
     ]));
 }
 
-pub fn flip_allow_claim(deps: DepsMut) -> Result<Response, StdError> {
+pub fn flip_allow_claim(deps: DepsMut, info: MessageInfo) -> Result<Response, StdError> {
     let mut state = STATE.load(deps.storage)?;
+
+    if state.admin != info.sender {
+        return Err(StdError::generic_err("Unauthorized: not admin"));
+    }
+
     state.allow_claim = !state.allow_claim;
     STATE.save(deps.storage, &state)?;
 

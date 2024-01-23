@@ -1,7 +1,7 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    coin, to_binary, Addr, Binary, Coin, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply,
+    coin, to_json_binary, Addr, Binary, Coin, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply,
     ReplyOn, Response, StdError, StdResult, SubMsg, WasmMsg,
 };
 use cw2::set_contract_version;
@@ -108,7 +108,7 @@ pub fn execute_admin_config(
         },
     )?;
 
-    Ok(Response::new().add_attribute("action", "update_config"))
+    Ok(Response::new().add_attribute("action", "update_admin_config"))
 }
 
 // Only owner can execute it
@@ -214,7 +214,7 @@ pub fn execute_create_pair(
                 funds: vec![],
                 admin: Some(env.contract.address.to_string()),
                 label: "pair".to_string(),
-                msg: to_binary(&PairInstantiateMsg {
+                msg: to_json_binary(&PairInstantiateMsg {
                     asset_infos,
                     token_code_id: config.token_code_id,
                     asset_decimals,
@@ -274,7 +274,7 @@ pub fn execute_migrate_pair(
         Response::new().add_message(CosmosMsg::Wasm(WasmMsg::Migrate {
             contract_addr: contract,
             new_code_id: code_id,
-            msg: to_binary(&PairMigrateMsg {})?,
+            msg: to_json_binary(&PairMigrateMsg {})?,
         })),
     )
 }
@@ -326,7 +326,7 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
                 let contract_addr = deps.api.addr_humanize(contract_addr)?.to_string();
                 messages.push(CosmosMsg::Wasm(WasmMsg::Execute {
                     contract_addr: contract_addr.to_string(),
-                    msg: to_binary(&Cw20ExecuteMsg::IncreaseAllowance {
+                    msg: to_json_binary(&Cw20ExecuteMsg::IncreaseAllowance {
                         spender: pair_contract.to_string(),
                         amount: asset.amount,
                         expires: None,
@@ -335,7 +335,7 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
                 }));
                 messages.push(CosmosMsg::Wasm(WasmMsg::Execute {
                     contract_addr,
-                    msg: to_binary(&Cw20ExecuteMsg::TransferFrom {
+                    msg: to_json_binary(&Cw20ExecuteMsg::TransferFrom {
                         owner: tmp_pair_info.sender.to_string(),
                         recipient: env.contract.address.to_string(),
                         amount: asset.amount,
@@ -348,7 +348,7 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
         funds.sort_by(|a, b| a.denom.cmp(&b.denom));
         messages.push(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: pair_contract.to_string(),
-            msg: to_binary(&PairExecuteMsg::ProvideLiquidity {
+            msg: to_json_binary(&PairExecuteMsg::ProvideLiquidity {
                 assets,
                 receiver: Some(tmp_pair_info.sender.to_string()),
                 deadline: None,
@@ -369,13 +369,13 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::Config {} => to_binary(&query_config(deps)?),
-        QueryMsg::Pair { asset_infos } => to_binary(&query_pair(deps, asset_infos)?),
+        QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
+        QueryMsg::Pair { asset_infos } => to_json_binary(&query_pair(deps, asset_infos)?),
         QueryMsg::Pairs { start_after, limit } => {
-            to_binary(&query_pairs(deps, start_after, limit)?)
+            to_json_binary(&query_pairs(deps, start_after, limit)?)
         }
         QueryMsg::NativeTokenDecimals { denom } => {
-            to_binary(&query_native_token_decimal(deps, denom)?)
+            to_json_binary(&query_native_token_decimal(deps, denom)?)
         }
     }
 }

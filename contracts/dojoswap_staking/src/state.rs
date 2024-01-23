@@ -6,6 +6,7 @@ use cosmwasm_storage::{singleton, singleton_read, Bucket, ReadonlyBucket};
 
 static KEY_CONFIG: &[u8] = b"config";
 static KEY_STATE: &[u8] = b"state";
+static KEY_GOV: &[u8] = b"gov";
 
 static PREFIX_REWARD: &[u8] = b"reward";
 
@@ -37,6 +38,14 @@ pub fn store_state(storage: &mut dyn Storage, state: &State) -> StdResult<()> {
 
 pub fn read_state(storage: &dyn Storage) -> StdResult<State> {
     singleton_read(storage, KEY_STATE).load()
+}
+
+pub fn store_gov(storage: &mut dyn Storage, gov: &String) -> StdResult<()> {
+    singleton(storage, KEY_GOV).save(gov)
+}
+
+pub fn read_gov(storage: &dyn Storage) -> StdResult<String> {
+    singleton_read(storage, KEY_GOV).load()
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

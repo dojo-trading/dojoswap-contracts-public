@@ -7,7 +7,7 @@ use dojo_staking_helpers::staking::{
 };
 use cosmwasm_std::testing::{mock_env, mock_info};
 use cosmwasm_std::{
-    attr, from_binary, to_binary, CosmosMsg, Decimal, StdError, SubMsg, Uint128, WasmMsg,
+    attr, from_json, to_json_binary, CosmosMsg, Decimal, StdError, SubMsg, Uint128, WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
 
@@ -28,7 +28,7 @@ fn proper_initialization() {
 
     // it worked, let's query the state
     let res = query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap();
-    let config: ConfigResponse = from_binary(&res).unwrap();
+    let config: ConfigResponse = from_json(&res).unwrap();
     assert_eq!(
         config,
         ConfigResponse {
@@ -44,7 +44,7 @@ fn proper_initialization() {
         QueryMsg::State { block_time: None },
     )
     .unwrap();
-    let state: StateResponse = from_binary(&res).unwrap();
+    let state: StateResponse = from_json(&res).unwrap();
     assert_eq!(
         state,
         StateResponse {
@@ -82,7 +82,7 @@ fn test_bond_tokens() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Bond {}).unwrap(),
+        msg: to_json_binary(&Cw20HookMsg::Bond {}).unwrap(),
     });
 
     let info = mock_info("staking0000", &[]);
@@ -90,7 +90,7 @@ fn test_bond_tokens() {
     let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
 
     assert_eq!(
-        from_binary::<StakerInfoResponse>(
+        from_json::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
                 mock_env(),
@@ -111,7 +111,7 @@ fn test_bond_tokens() {
     );
 
     assert_eq!(
-        from_binary::<StateResponse>(
+        from_json::<StateResponse>(
             &query(
                 deps.as_ref(),
                 mock_env(),
@@ -131,14 +131,14 @@ fn test_bond_tokens() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Bond {}).unwrap(),
+        msg: to_json_binary(&Cw20HookMsg::Bond {}).unwrap(),
     });
     env.block.time = env.block.time.plus_seconds(10);
 
     let _res = execute(deps.as_mut(), env, info, msg).unwrap();
 
     assert_eq!(
-        from_binary::<StakerInfoResponse>(
+        from_json::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
                 mock_env(),
@@ -159,7 +159,7 @@ fn test_bond_tokens() {
     );
 
     assert_eq!(
-        from_binary::<StateResponse>(
+        from_json::<StateResponse>(
             &query(
                 deps.as_ref(),
                 mock_env(),
@@ -179,7 +179,7 @@ fn test_bond_tokens() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Bond {}).unwrap(),
+        msg: to_json_binary(&Cw20HookMsg::Bond {}).unwrap(),
     });
 
     let info = mock_info("staking0001", &[]);
@@ -210,7 +210,7 @@ fn test_unbond() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Bond {}).unwrap(),
+        msg: to_json_binary(&Cw20HookMsg::Bond {}).unwrap(),
     });
     let info = mock_info("staking0000", &[]);
     let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -240,7 +240,7 @@ fn test_unbond() {
         res.messages,
         vec![SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: "staking0000".to_string(),
-            msg: to_binary(&Cw20ExecuteMsg::Transfer {
+            msg: to_json_binary(&Cw20ExecuteMsg::Transfer {
                 recipient: "addr0000".to_string(),
                 amount: Uint128::from(100u128),
             })
@@ -278,7 +278,7 @@ fn test_compute_reward() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Bond {}).unwrap(),
+        msg: to_json_binary(&Cw20HookMsg::Bond {}).unwrap(),
     });
     let info = mock_info("staking0000", &[]);
     let mut env = mock_env();
@@ -292,12 +292,12 @@ fn test_compute_reward() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Bond {}).unwrap(),
+        msg: to_json_binary(&Cw20HookMsg::Bond {}).unwrap(),
     });
     let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
     assert_eq!(
-        from_binary::<StakerInfoResponse>(
+        from_json::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
                 mock_env(),
@@ -328,7 +328,7 @@ fn test_compute_reward() {
     };
     let _res = execute(deps.as_mut(), env, info, msg).unwrap();
     assert_eq!(
-        from_binary::<StakerInfoResponse>(
+        from_json::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
                 mock_env(),
@@ -350,7 +350,7 @@ fn test_compute_reward() {
 
     // query future block
     assert_eq!(
-        from_binary::<StakerInfoResponse>(
+        from_json::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
                 mock_env(),
@@ -399,7 +399,7 @@ fn test_withdraw() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Bond {}).unwrap(),
+        msg: to_json_binary(&Cw20HookMsg::Bond {}).unwrap(),
     });
     let info = mock_info("staking0000", &[]);
     let mut env = mock_env();
@@ -418,7 +418,7 @@ fn test_withdraw() {
         res.messages,
         vec![SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: "reward0000".to_string(),
-            msg: to_binary(&Cw20ExecuteMsg::Transfer {
+            msg: to_json_binary(&Cw20ExecuteMsg::Transfer {
                 recipient: "addr0000".to_string(),
                 amount: Uint128::from(1000000u128),
             })
@@ -456,7 +456,7 @@ fn test_migrate_staking() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Bond {}).unwrap(),
+        msg: to_json_binary(&Cw20HookMsg::Bond {}).unwrap(),
     });
     let info = mock_info("staking0000", &[]);
     let mut env = mock_env();
@@ -474,7 +474,7 @@ fn test_migrate_staking() {
         res.messages,
         vec![SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: "reward0000".to_string(),
-            msg: to_binary(&Cw20ExecuteMsg::Transfer {
+            msg: to_json_binary(&Cw20ExecuteMsg::Transfer {
                 recipient: "addr0000".to_string(),
                 amount: Uint128::from(1000000u128),
             })
@@ -517,7 +517,7 @@ fn test_migrate_staking() {
         res.messages,
         vec![SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: "reward0000".to_string(),
-            msg: to_binary(&Cw20ExecuteMsg::Transfer {
+            msg: to_json_binary(&Cw20ExecuteMsg::Transfer {
                 recipient: "newstaking0000".to_string(),
                 amount: Uint128::from(5000000u128),
             })
@@ -528,7 +528,7 @@ fn test_migrate_staking() {
 
     // query config
     let res = query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap();
-    let config: ConfigResponse = from_binary(&res).unwrap();
+    let config: ConfigResponse = from_json(&res).unwrap();
     assert_eq!(
         config,
         ConfigResponse {
@@ -611,7 +611,7 @@ fn test_update_config() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Bond {}).unwrap(),
+        msg: to_json_binary(&Cw20HookMsg::Bond {}).unwrap(),
     });
     let info = mock_info("staking0000", &[]);
     let mut env = mock_env();
@@ -628,7 +628,7 @@ fn test_update_config() {
         res.messages,
         vec![SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: "reward0000".to_string(),
-            msg: to_binary(&Cw20ExecuteMsg::Transfer {
+            msg: to_json_binary(&Cw20ExecuteMsg::Transfer {
                 recipient: "addr0000".to_string(),
                 amount: Uint128::from(1000000u128),
             })
@@ -683,7 +683,7 @@ fn test_update_config() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Bond {}).unwrap(),
+        msg: to_json_binary(&Cw20HookMsg::Bond {}).unwrap(),
     });
     let info = mock_info("staking0000", &[]);
     let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
@@ -779,7 +779,7 @@ fn test_update_config() {
 
     // query config
     let res = query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap();
-    let config: ConfigResponse = from_binary(&res).unwrap();
+    let config: ConfigResponse = from_json(&res).unwrap();
     assert_eq!(
         config.distribution_schedule,
         vec![
@@ -851,7 +851,7 @@ fn test_update_config() {
 
     // query config
     let res = query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap();
-    let config: ConfigResponse = from_binary(&res).unwrap();
+    let config: ConfigResponse = from_json(&res).unwrap();
     assert_eq!(
         config.distribution_schedule,
         vec![
@@ -922,7 +922,7 @@ fn test_update_config() {
 
     // query config
     let res = query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap();
-    let config: ConfigResponse = from_binary(&res).unwrap();
+    let config: ConfigResponse = from_json(&res).unwrap();
     assert_eq!(
         config.distribution_schedule,
         vec![
@@ -998,7 +998,7 @@ fn test_update_config() {
 
     // query config
     let res = query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap();
-    let config: ConfigResponse = from_binary(&res).unwrap();
+    let config: ConfigResponse = from_json(&res).unwrap();
     assert_eq!(
         config.distribution_schedule,
         vec![
