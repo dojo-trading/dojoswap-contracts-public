@@ -361,8 +361,7 @@ fn compute_reward(config: &Config, state: &mut State, block_time: u64) {
 
 // withdraw reward to pending reward
 fn compute_staker_reward(state: &State, staker_info: &mut StakerInfo) -> StdResult<()> {
-    let pending_reward = (staker_info.bond_amount * state.global_reward_index)
-        .checked_sub(staker_info.bond_amount * staker_info.reward_index)?;
+    let pending_reward = staker_info.bond_amount * state.global_reward_index.checked_sub(staker_info.reward_index)?;
 
     staker_info.reward_index = state.global_reward_index;
     staker_info.pending_reward += pending_reward;

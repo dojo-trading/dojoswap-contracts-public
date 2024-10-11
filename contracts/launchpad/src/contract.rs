@@ -10,8 +10,8 @@ use dojoswap::util::migrate_version;
 
 use crate::{
     msg::{
-        ConfigResponse, ExecuteMsg, InstantiateMsg, IsClaimingAllowedResponse, QueryMsg,
-        TotalAmountResponse, UserInfoResponse, MigrateMsg,
+        ConfigResponse, ExecuteMsg, InstantiateMsg, IsClaimingAllowedResponse, MigrateMsg,
+        QueryMsg, TotalAmountResponse, UserInfoResponse,
     },
     state::{State, STATE, USER_INFO},
 };
@@ -84,12 +84,12 @@ pub fn execute(
     }
 }
 
-const TARGET_CONTRACT_VERSION: &str = "0.1.2";
+const EXPECTED_PREVIOUS_CONTRACT_VERSION: &str = "0.1.2";
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, ContractError> {
     migrate_version(
         deps,
-        TARGET_CONTRACT_VERSION,
+        EXPECTED_PREVIOUS_CONTRACT_VERSION,
         CONTRACT_NAME,
         CONTRACT_VERSION,
     )?;
@@ -113,9 +113,11 @@ pub fn update_config(
     if state.admin != info.sender {
         return Err(StdError::generic_err("Unauthorized: not admin"));
     }
-    
+
     if state.total_amount != Uint128::zero() {
-        return Err(StdError::generic_err("Unauthorized: launchpad already in progress"));
+        return Err(StdError::generic_err(
+            "Unauthorized: launchpad already in progress",
+        ));
     }
 
     if start_time > end_time {
@@ -174,6 +176,10 @@ fn deposit(
     // Transfer tokens from sender to the contract
     if info.funds.len() != 1 || info.funds[0].denom != state.raising_denom {
         return Err(StdError::generic_err("Wrong denom"));
+    }
+
+    if info.funds[0].amount != amount {
+        return Err(StdError::generic_err("Wrong amount"));
     }
 
     // Update user information
@@ -289,7 +295,7 @@ pub fn final_withdraw(
     let raising_denom = state.clone().raising_denom.to_string();
 
     // Check if the sender is the admin
-    if info.sender.to_string() != state.admin {
+    if info.sender.to_string() != state.admin.to_string() {
         return Err(StdError::generic_err("Unauthorized: not admin"));
     }
 
@@ -329,7 +335,7 @@ pub fn final_withdraw(
         messages.push(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: state.offering_token.to_string(),
             msg: to_json_binary(&Cw20ExecuteMsg::Transfer {
-                recipient: env.contract.address.to_string(),
+                recipient: info.sender.to_string(),
                 amount: offer_amount,
             })?,
             funds: vec![],

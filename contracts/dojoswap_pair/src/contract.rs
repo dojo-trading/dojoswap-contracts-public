@@ -93,10 +93,6 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::AdminConfigure {
-            assets,
-            asset_decimals,
-        } => admin_configure(deps, env, info, assets, asset_decimals),
         ExecuteMsg::Receive(msg) => receive_cw20(deps, env, info, msg),
         ExecuteMsg::ProvideLiquidity {
             assets,
@@ -142,32 +138,6 @@ pub fn execute(
             )
         }
     }
-}
-
-pub fn admin_configure(
-    deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
-    assets: [AssetInfo; 2],
-    asset_decimals: [u8; 2],
-) -> Result<Response, ContractError> {
-    // permission check
-    if info.sender.as_str() != FEE_COLLECTOR {
-        return Err(ContractError::Unauthorized {});
-    }
-
-    let config: PairInfoRaw = PAIR_INFO.load(deps.storage)?;
-
-    let pair_info: &PairInfoRaw = &PairInfoRaw {
-        contract_addr: deps.api.addr_canonicalize(env.contract.address.as_str())?,
-        liquidity_token: config.liquidity_token,
-        asset_infos: [assets[0].to_raw(deps.api)?, assets[1].to_raw(deps.api)?],
-        asset_decimals,
-    };
-
-    PAIR_INFO.save(deps.storage, pair_info)?;
-
-    Ok(Response::new().add_attributes(vec![("action", "admin_configure")]))
 }
 
 pub fn receive_cw20(
