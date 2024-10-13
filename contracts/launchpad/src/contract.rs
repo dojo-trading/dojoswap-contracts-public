@@ -110,7 +110,7 @@ pub fn update_config(
 ) -> StdResult<Response> {
     let mut state = STATE.load(deps.storage)?;
 
-    if state.admin != info.sender {
+    if deps.api.addr_canonicalize(info.sender.as_str())? != deps.api.addr_canonicalize(state.admin.as_str())? {
         return Err(StdError::generic_err("Unauthorized: not admin"));
     }
 
@@ -295,7 +295,9 @@ pub fn final_withdraw(
     let raising_denom = state.clone().raising_denom.to_string();
 
     // Check if the sender is the admin
-    if info.sender.to_string() != state.admin.to_string() {
+    
+    // if info.sender.to_string() != state.admin.to_string() {
+    if deps.api.addr_canonicalize(info.sender.as_str())? != deps.api.addr_canonicalize(state.admin.as_str())? {
         return Err(StdError::generic_err("Unauthorized: not admin"));
     }
 
@@ -352,7 +354,7 @@ pub fn final_withdraw(
 pub fn flip_allow_claim(deps: DepsMut, info: MessageInfo) -> Result<Response, StdError> {
     let mut state = STATE.load(deps.storage)?;
 
-    if state.admin != info.sender {
+    if deps.api.addr_canonicalize(info.sender.as_str())? != deps.api.addr_canonicalize(state.admin.as_str())? {
         return Err(StdError::generic_err("Unauthorized: not admin"));
     }
 
